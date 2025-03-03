@@ -9,24 +9,46 @@ namespace CaveJourner{
         public static string escapeColour = "\u001b[0m";
         public static int score = 0;
         public static Boolean playing = true;
-        public static TimeSpan sessionTime;
-        public static int location = 0;
+       //public static TimeSpan sessionTime;
     }
 
 
 
     class Display{
-
         //only works on windows
         // public static void InitialiseDisplay(){
         //     Console.SetWindowSize(40, 40);
         // }
 
+         public void Flash(){
+            //class can be its own class when there are multipl
+
+            Console.WriteLine(@"(====================================================)");
+            Console.WriteLine(@"|                                                    |");
+            Console.WriteLine(@"|                                                    |");
+            Console.WriteLine(@"|         #                                    {}    |");
+            Console.WriteLine(@"|                                                    |");
+            Console.WriteLine(@"|                                                    |");
+            Console.WriteLine(@"|                                  *                 |");
+            Console.WriteLine(@"|                                                    |");
+            Console.WriteLine(@"|                                                    |");
+            Console.WriteLine(@"|                     :                              |");
+            Console.WriteLine(@"|   #                                                |");
+            Console.WriteLine(@"|                                                    |");
+            Console.WriteLine(@"|                                                    |");
+            Console.WriteLine(@"|                                                  ? |");
+            Console.WriteLine(@"|                                                    |");
+            Console.WriteLine(@"|            |                  *                  /#|");
+            Console.WriteLine(@"|!\                                                /#|"); 
+            Console.WriteLine(@"|}\                     *                          /#|");
+            Console.WriteLine(@"(====================================================)");
+        }
+
         public void WaitAnimation(){
 
             for (int i =0; i<3; i++){
                 Console.Write("                          ...                        \n");
-                System.Threading.Thread.Sleep(1000); 
+                System.Threading.Thread.Sleep(200); 
             }  
         }
 
@@ -71,8 +93,59 @@ namespace CaveJourner{
             //ascii art of the paths ...
         }
 
+        public void setTextColour(ConsoleColor Colour){
+             Console.ForegroundColor = Colour;
 
-        public void ChoosingSelection(string option1, string option2, string option3, int currentSelected){
+        }  
+    }
+
+    class Room{
+        private static int roomNum = 0;
+        private string description;
+        private string itemName = "Nothing";
+
+        public Room(int RoomNum, string Desc){
+            roomNum = RoomNum;
+            description = Desc;
+        }
+
+        public string getDescription(){
+            return ($"You are standing {description}");
+        }
+
+    }
+
+    class Player{
+        private string name;
+        private static int playerLocation = 0;
+        private static int energy = 4;
+
+        public Player(string Name){
+            name = Name;
+        }
+
+        public string getName(){
+            return name;
+        }
+
+        // public string setName(string PlayerName){
+        //     //user sets their own name
+        // }
+
+        public int getLocation(){
+            return playerLocation;
+        }
+
+        public void setLocation(int Loc){
+            playerLocation = Loc;
+        }
+    }
+ 
+
+    class Game{
+        public string[] directions = {"left", "forwards", "right"};
+
+        public void ChooseDirection(string option1, string option2, string option3, int currentSelected){
             Boolean choosing = true;
             string[] options = [option1, option2, option3];
             (int x, int y) = Console.GetCursorPosition();
@@ -105,38 +178,35 @@ namespace CaveJourner{
                         }
                         break;
                     case ConsoleKey.Enter:
+                        Console.Write("\n");
                         choosing = false;
                         break;
                 }
 
             }
+        }
 
-         
-    }
-
- 
-
-    class Game{
-        public void MoveLocation(){}
-
-
+        // public void DescribeLocation(int room){
+        //     Console.WriteLine($"{Room.description[room]}");
+        // }     
 
         public void EndGame(){
             GlobalStore.playing = false;
         }
 
-
     }
 
     class Timer{
+        private static TimeSpan sessionTime;
+
         public static TimeSpan getSessionTime(){
-            return GlobalStore.sessionTime;
+            return sessionTime;
         }
 
         public static TimeSpan setSessionTime(TimeSpan currentSessionTime){
-            GlobalStore.sessionTime += currentSessionTime;
+            sessionTime += currentSessionTime;
 
-            return GlobalStore.sessionTime;
+            return sessionTime;
         }
 
         public static DateTime getTime(){
@@ -239,53 +309,53 @@ namespace CaveJourner{
             Display gameDisplay = new Display();
             Game game = new Game();
 
+
+
+            //user input to get players name before game?
+            Player player = new Player("MyName");
+            List<Room> rooms = new List<Room>();
+
+            rooms.Add(new Room(0, "in a dimly-lit, cavernous space. \nAhead of you are 3 passages."));
+            rooms.Add(new Room(1, "at an exposed cliff face.\n A sheer drop lies only a metre ahead."));
+
             while (GlobalStore.playing){
-                gameDisplay.StartDisplay();
 
-                //gameDisplay.WaitAnimation();
-                //Timer.WaitSeconds(3);
+                //make some resetting display Console Location methods so that new text always appears after old
 
-                gameDisplay.Paths();
+                    gameDisplay.StartDisplay();
 
-                gameDisplay.ChoosingSelection("left", "forwards", "right", 0);
+                    gameDisplay.WaitAnimation();
 
-                game.EndGame();
+                    gameDisplay.Paths();
+
+                    string roomDescriptor = rooms[player.getLocation()].getDescription();
+                    Console.WriteLine(roomDescriptor);
+
+                    game.ChooseDirection("left", "forwards", "right", 0);
+
+                    gameDisplay.Flash();
+
+                    Timer.WaitSeconds(2);
+
+                    game.EndGame();
             }
  
 
             
             DateTime endTime = Timer.getTime();
-
-            //time lasted and sessiontime are literally the sam elol but im used dto useing store?? which better
             TimeSpan timeLasted = Timer.timeDiffT(startTime, endTime);
-            GlobalStore.sessionTime = Timer.setSessionTime(timeLasted);
+            Timer.setSessionTime(timeLasted);
 
-            Console.ForegroundColor = ConsoleColor.Yellow;
+
+            gameDisplay.setTextColour(ConsoleColor.Cyan);
             Console.WriteLine($"\nTime Played: {Timer.getSessionTime().ToString(@"mm\:ss\.ff")}  ...");
-
-
-
 
             Console.ResetColor();       
 
-            // while (startQuiz){
-            //     for (int quizQuestion = 0; quizQuestion < 3; quizQuestion ++){
-            //         myQuiz.DisplayQuestion(quizQuestion);
-
-            //         myQuiz.DisplayAnswersWithUserInput(quizQuestion);
-
-            //     }
-            //     startQuiz = false;
-            // }
-
-            // myQuiz.DisplayScore();
-
-
-
         }
 
-    }
-}}
+    }}
+
 
 
 
